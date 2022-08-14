@@ -1,6 +1,6 @@
 from typing import List
 from fastapi import APIRouter, status
-from .schema import TaskSchemaIn, TaskSchemaOut
+from .schemas import TaskSchemaIn, TaskSchemaOut
 from .models import Task
 
 task = APIRouter(
