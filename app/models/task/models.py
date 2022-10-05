@@ -1,5 +1,5 @@
 from redis_om import HashModel
-from .config import redis_db
+from ...config import redis_db
 
 class Task(HashModel):
     name: str
