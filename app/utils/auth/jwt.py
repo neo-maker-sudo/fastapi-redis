@@ -1,8 +1,11 @@
 from datetime import datetime, timedelta
 from fastapi import Depends
-from fastapi.security import OAuth2PasswordBearer, OAuth2AuthorizationCodeBearer
+from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
+from sqlalchemy.orm import Session
 from app.config import settings
+from app.models.user.crud import retrieve_user_by_email
+from app.database import retrieve_database
 from app.utils.base.exceptions import (
     UnauthorizedError,
     NotFoundError,
@@ -19,7 +22,7 @@ def generate_jwt_expired_time(dt: dict):
 
 
 def generate_jwt_payload(data: str) -> dict:
-    expired_at = generate_jwt_expired_time(settings.timedelta_seconds_args)
+    expired_at = generate_jwt_expired_time(settings.timedelta_minutes_args)
 
     if not data:
         raise NotFoundError
@@ -47,7 +50,7 @@ def encode_access_token(data: str) -> str:
         raise e
 
 
-def decode_access_token(token: str = Depends(oauth2_scheme)):
+def decode_access_token(token: str = Depends(oauth2_scheme), db: Session = Depends(retrieve_database)):
     try:
         payload = jwt.decode(
             token, 
@@ -55,18 +58,20 @@ def decode_access_token(token: str = Depends(oauth2_scheme)):
             algorithms=[settings.ALGORITHM]
         )
 
-        username: str = payload.get("sub", None)
+        email: str = payload.get("sub", None)
 
-        if not username:
+        if not email:
             raise credentials_exception
         
-        if not settings.fake_db[username]:
+        user = retrieve_user_by_email(db=db, email=email)
+        
+        if not user:
             raise credentials_exception
         
     except JWTError:
         raise credentials_exception
 
-    except Exception:
-        raise Exception
+    except Exception as e:
+        raise e
 
-    return settings.fake_db[username]
+    return user
