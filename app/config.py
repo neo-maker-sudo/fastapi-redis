@@ -14,12 +14,7 @@ class Settings:
     JWY_TOKEN_TYPE = "Bearer"
     ALGORITHM = "HS256"
 
-    fake_db = {
-        "neo": {
-            "username": "neo"
-        }
-    }
-
+    DATABASE_URL = os.environ.get("DATABASE_URL")
     
     timedelta_seconds_args = {TimedeltaKeyEnum.SECONDS: TimedeltaValueEnum.FIVE}
     timedelta_minutes_args = {TimedeltaKeyEnum.MINUTES: TimedeltaValueEnum.THIRTY}
